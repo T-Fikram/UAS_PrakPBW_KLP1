@@ -1,0 +1,52 @@
+// Prisma schema for HealthMirror using SQLite for zero-config simplicity
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  name          String
+  email         String         @unique
+  password      String
+  createdAt     DateTime       @default(now()) @map("created_at")
+  healthRecords HealthRecord[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model HealthRecord {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @map("user_id")
+  date             DateTime
+  sleepHours       Float    @map("sleep_hours")
+  waterGlasses     Int      @map("water_glasses")
+  exerciseMinutes  Int      @map("exercise_minutes")
+  screenTimeHours  Float    @map("screen_time_hours")
+  healthScore      Int      @map("health_score")
+  createdAt        DateTime @default(now()) @map("created_at")
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("health_records")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  title     String
+  message   String
+  type      String   // e.g. "info", "warning", "success", "reminder"
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
